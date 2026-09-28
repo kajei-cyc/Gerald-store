@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gerald Store — Online Shop</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{background:#123a72;color:#fff;position:sticky;top:0;z-index:20}
+.nav{max-width:1150px;margin:auto;padding:15px 18px;display:flex;gap:15px;align-items:center;justify-content:space-between}
+.logo{font-size:23px;font-weight:800}.navlinks a{color:#fff;text-decoration:none;margin-left:14px}
+.cartbtn{background:#fff;color:#123a72;border:0;border-radius:8px;padding:10px 13px;font-weight:700;cursor:pointer}
+.hero{background:linear-gradient(135deg,#123a72,#2876d1);color:#fff;text-align:center;padding:48px 18px}
+.hero h1{font-size:42px;margin:0 0 10px}.hero p{font-size:18px}
+.wrap{max-width:1150px;margin:auto;padding:30px 18px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+input,select{padding:13px;border:1px solid #d4d9e2;border-radius:9px;font-size:15px;background:#fff}
+#search{flex:1;min-width:220px}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 3px 14px #0001}
+.pic{height:165px;background:#e8eef7;display:flex;align-items:center;justify-content:center;font-size:62px}
+.info{padding:15px}.info h3{margin:0 0 7px}.cat{font-size:12px;color:#68758a}.price{font-size:19px;font-weight:800;margin:10px 0}
+.add{width:100%;border:0;background:#123a72;color:white;padding:11px;border-radius:8px;font-weight:700;cursor:pointer}
+.empty{text-align:center;padding:40px;grid-column:1/-1}
+footer{margin-top:40px;background:#10233f;color:#fff;text-align:center;padding:25px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:50;padding:18px;overflow:auto}
+.box{background:#fff;max-width:620px;margin:30px auto;border-radius:15px;padding:22px}
+.box h2{margin-top:0}.close{float:right;border:0;background:none;font-size:25px;cursor:pointer}
+.cartrow{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #eee;padding:12px 0}
+.qty button{border:1px solid #ccc;background:#fff;border-radius:5px;padding:3px 8px}
+.total{font-size:20px;font-weight:800;text-align:right;margin:18px 0}
+.form input{width:100%;margin:6px 0}.form textarea{width:100%;min-height:80px;margin:6px 0;padding:12px;border:1px solid #d4d9e2;border-radius:9px}
+.checkout{width:100%;padding:13px;border:0;border-radius:9px;background:#16834b;color:white;font-weight:800;cursor:pointer}
+.note{font-size:13px;color:#68758a}
+@media(max-width:900px){.products{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){.navlinks{display:none}.hero h1{font-size:33px}.products{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.products{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="nav">
+<div class="logo">GERALD STORE</div>
+<div class="navlinks"><a href="#shop">Shop</a><a href="#contact">Contact</a></div>
+<button class="cartbtn" onclick="openCart()">🛒 Cart (<span id="count">0</span>)</button>
+</div></header>
+
+<section class="hero"><h1>Everything You Need</h1><p>Shop fashion, phones, beauty, home products, electronics and gaming in one place.</p></section>
+
+<main class="wrap" id="shop">
+<h2>Shop Products</h2>
+<div class="controls">
+<input id="search" placeholder="🔎 Search products..." oninput="render()">
+<select id="category" onchange="render()">
+<option value="All">All categories</option>
+<option>Fashion</option><option>Shoes</option><option>Phones</option><option>Beauty</option>
+<option>Home</option><option>Electronics</option><option>Gaming</option>
+</select>
+<select id="sort" onchange="render()">
+<option value="default">Sort: Featured</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option>
+</select>
+</div>
+<div class="products" id="products"></div>
+</main>
+
+<section class="wrap" id="contact">
+<h2>Contact</h2><p>📍 Embu, Kenya · 📞 0713 696494 · 💬 WhatsApp orders available</p>
+</section>
+<footer>© 2026 Gerald Store · Embu, Kenya</footer>
+
+<div class="modal" id="cartModal"><div class="box">
+<button class="close" onclick="closeCart()">×</button><h2>🛒 Your Cart</h2>
+<div id="cartItems"></div><div class="total" id="total"></div>
+<button class="checkout" onclick="openCheckout()">Proceed to Checkout</button>
+</div></div>
+
+<div class="modal" id="checkoutModal"><div class="box">
+<button class="close" onclick="closeCheckout()">×</button><h2>Checkout / Order</h2>
+<p class="note">Enter your details. Your order will be prepared as a WhatsApp message to Gerald Store.</p>
+<form class="form" onsubmit="sendOrder(event)">
+<input id="name" required placeholder="Full name">
+<input id="phone" required placeholder="Phone number">
+<input id="location" required placeholder="Delivery location / town">
+<textarea id="notes" placeholder="Extra instructions (optional)"></textarea>
+<div class="total" id="checkoutTotal"></div>
+<button class="checkout" type="submit">Send Order on WhatsApp</button>
+</form>
+</div></div>
+
+<script>
+const products=[
+["Classic T-Shirt","Fashion",1200,"👕"],["Hoodie","Fashion",2500,"🧥"],["Jeans","Fashion",2800,"👖"],["Summer Dress","Fashion",2200,"👗"],["Jacket","Fashion",4200,"🧥"],["Polo Shirt","Fashion",1800,"👕"],["Cap","Fashion",700,"🧢"],["Sunglasses","Fashion",900,"🕶️"],["Nike Shoes","Shoes",3500,"👟"],["Running Shoes","Shoes",4200,"👟"],["Casual Sneakers","Shoes",3000,"👟"],["Sandals","Shoes",1500,"🩴"],["Boots","Shoes",4800,"🥾"],["School Shoes","Shoes",2200,"👞"],["Samsung Phone","Phones",25000,"📱"],["iPhone","Phones",65000,"📱"],["Tecno Phone","Phones",16000,"📱"],["Infinix Phone","Phones",18000,"📱"],["Phone Case","Phones",800,"📱"],["Fast Charger","Phones",1200,"🔌"],["Perfume","Beauty",1800,"🌸"],["Body Lotion","Beauty",900,"🧴"],["Lip Gloss","Beauty",600,"💄"],["Hair Oil","Beauty",750,"🧴"],["Face Cream","Beauty",1100,"🧴"],["Makeup Kit","Beauty",2500,"💄"],["Bedsheet Set","Home",2200,"🛏️"],["Cooking Pot","Home",2800,"🍲"],["Electric Kettle","Home",2500,"🫖"],["Wall Clock","Home",1200,"🕐"],["Storage Box","Home",900,"📦"],["Table Lamp","Home",1600,"💡"],["Bluetooth Speaker","Electronics",2800,"🔊"],["Headphones","Electronics",2200,"🎧"],["Power Bank","Electronics",2500,"🔋"],["Smart Watch","Electronics",3500,"⌚"],["USB Cable","Electronics",500,"🔌"],["LED Bulb","Electronics",450,"💡"],["Game Controller","Gaming",3500,"🎮"],["Gaming Headset","Gaming",3000,"🎧"],["Gamepad","Gaming",2200,"🎮"],["Gaming Mouse","Gaming",1800,"🖱️"],["Gaming Keyboard","Gaming",2800,"⌨️"],["Mobile Game Controller","Gaming",1600,"🎮"]];
+let cart=[];
+function money(n){return "KSh "+n.toLocaleString()}
+function render(){
+ const q=document.getElementById("search").value.toLowerCase(), c=document.getElementById("category").value, s=document.getElementById("sort").value;
+ let list=products.filter(p=>(c==="All"||p[1]===c)&&p[0].toLowerCase().includes(q));
+ if(s==="low")list.sort((a,b)=>a[2]-b[2]); if(s==="high")list.sort((a,b)=>b[2]-a[2]);
+ document.getElementById("products").innerHTML=list.length?list.map((p,i)=>`<div class="card"><div class="pic">${p[3]}</div><div class="info"><div class="cat">${p[1]}</div><h3>${p[0]}</h3><div class="price">${money(p[2])}</div><button class="add" onclick="add('${p[0]}')">Add to Cart</button></div></div>`).join(""):'<div class="empty">No products found.</div>';
+}
+function add(name){const p=products.find(x=>x[0]===name);const item=cart.find(x=>x[0]===name);if(item)item[3]++;else cart.push([p[0],p[1],p[2],1]);update()}
+function update(){document.getElementById("count").textContent=cart.reduce((a,x)=>a+x[3],0)}
+function openCart(){document.getElementById("cartModal").style.display="block";showCart()}
+function closeCart(){document.getElementById("cartModal").style.display="none"}
+function showCart(){
+ const el=document.getElementById("cartItems"); if(!cart.length){el.innerHTML="<p>Your cart is empty.</p>";document.getElementById("total").textContent="";return}
+ el.innerHTML=cart.map((x,i)=>`<div class="cartrow"><div><b>${x[0]}</b><br>${money(x[2])} × ${x[3]}</div><div class="qty"><button onclick="change(${i},-1)">−</button> <button onclick="change(${i},1)">+</button></div></div>`).join("");
+ document.getElementById("total").textContent="Total: "+money(cart.reduce((a,x)=>a+x[2]*x[3],0));
+}
+function change(i,n){cart[i][3]+=n;if(cart[i][3]<=0)cart.splice(i,1);update();showCart()}
+function openCheckout(){if(!cart.length){alert("Your cart is empty.");return}closeCart();document.getElementById("checkoutTotal").textContent="Order total: "+money(cart.reduce((a,x)=>a+x[2]*x[3],0));document.getElementById("checkoutModal").style.display="block"}
+function closeCheckout(){document.getElementById("checkoutModal").style.display="none"}
+function sendOrder(e){
+ e.preventDefault();
+ let lines=cart.map(x=>`${x[0]} x${x[3]} — ${money(x[2]*x[3])}`).join("%0A");
+ let total=cart.reduce((a,x)=>a+x[2]*x[3],0);
+ let msg=`Hello Gerald Store!%0A%0AOrder:%0A${lines}%0A%0ATotal: ${money(total)}%0AName: ${encodeURIComponent(document.getElementById("name").value)}%0APhone: ${encodeURIComponent(document.getElementById("phone").value)}%0ADelivery: ${encodeURIComponent(document.getElementById("location").value)}%0ANotes: ${encodeURIComponent(document.getElementById("notes").value)}`;
+ window.open("https://wa.me/254713696494?text="+msg,"_blank");
+}
+render();update();
+</script>
+</body>
+</html>
